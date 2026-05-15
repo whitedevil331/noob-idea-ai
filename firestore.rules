@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidIdea(data) {
+      return data.keys().hasAll(['id', 'userId', 'title', 'description', 'createdAt']) &&
+        data.id is string && data.id.size() <= 128 &&
+        data.userId is string && data.userId == request.auth.uid &&
+        data.title is string && data.title.size() <= 200 &&
+        data.description is string && data.description.size() <= 5000 &&
+        data.createdAt is number &&
+        (!('assessment' in data) || data.assessment == null || data.assessment is map);
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      match /ideas/{ideaId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(ideaId) &&
+                         isValidIdea(incoming()) &&
+                         incoming().id == ideaId;
+        allow update: if isOwner(userId) && isValidIdea(incoming());
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}
