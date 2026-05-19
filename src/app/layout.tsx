@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
+import { Analytics } from '@vercel/analytics/next';
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-jakarta' });
@@ -22,6 +23,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           {children}
         </FirebaseClientProvider>
+        <Analytics />
       </body>
     </html>
   );
