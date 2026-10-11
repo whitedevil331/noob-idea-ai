@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "Idea": {
+      "title": "Idea",
+      "description": "A generated business idea and its assessment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "assessment": {
+          "type": "object",
+          "properties": {
+            "novelty": { "type": "number" },
+            "feasibility": { "type": "number" },
+            "impact": { "type": "number" },
+            "summary": { "type": "string" },
+            "nextSteps": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "marketResponse": {
+              "type": "object",
+              "properties": {
+                "love": { "type": "string" },
+                "hate": { "type": "string" }
+              }
+            },
+            "competitors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "strategy": { "type": "string" }
+                }
+              }
+            },
+            "roadmap": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "phase": { "type": "string" },
+                  "tasks": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "title", "description", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/ideas": {
+      "schema": { "$ref": "#/entities/Idea" },
+      "description": "User's generated ideas"
+    }
+  }
+}
