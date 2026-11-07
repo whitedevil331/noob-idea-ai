@@ -1,6 +1,6 @@
 {
   "name": "noob-idea-ai",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=production next start -p 3000",
