@@ -123,8 +123,4 @@ npm run build
 
 ---
 
-## 5. Artifacts & Decision Records
-Every completed validation run includes a one-click **"Export ADR (.md)"** button generating an industry-standard Architecture Decision Record (`ADR-001.md`) formatted for Y Combinator applications, angel investor audits, and internal engineering reviews.
 
-## GitHub Remote & Deployment
-- To push to GitHub: `git remote add origin https://github.com/<username>/<repo>.git` followed by `git push -u origin main`.
