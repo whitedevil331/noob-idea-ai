@@ -13,40 +13,73 @@ An enterprise-grade, deterministic venture and cloud systems architecture valida
 ## 1. System Architecture Diagram
 
 ```mermaid
-flowchart TD
+graph TD
     Client["Client Studio UI (Next.js 15 + React 19)"]
     Auth["Firebase Auth (Google OAuth / Magic Key)"]
-    RateLimiter["TokenBucketRateLimiter (Per-user burst quota)"]
-    PIIScrubber["PII Redaction Engine (Email & Phone Scrubbing)"]
-    LRU["Deterministic LRU Cache (FNV-1a Prompt Hashing)"]
+    RateLimiter["TokenBucket RateLimiter"]
+    PIIScrubber["PII Redaction Engine"]
+    LRU["Deterministic LRU Cache"]
     Orchestrator["Hybrid 4-Stage Multi-Agent Orchestrator"]
-    ServerRoute["/api/validate-idea (Edge Server Runtime)"]
-    GeminiModel["Gemini 2.5 Flash (Structured JSON Mode)"]
+    ServerRoute["/api/validate-idea Route"]
+    GeminiModel["Gemini 2.5 Flash"]
     ZodValidator["Zod Schema Contract Validator"]
-    FirestoreStore["Firestore (users/{uid}/validations/{id})"]
-    LocalFallback["LocalStorage Resilient Fallback"]
-    ADRExport["ADR-001 (.md) Markdown Generator"]
+    FirestoreStore["Firestore Document Store"]
+    LocalFallback["LocalStorage Fallback"]
+    ADRExport["ADR-001 Markdown Exporter"]
 
-    Client -->|User Trigger| Auth
+    Client --> Auth
     Auth --> RateLimiter
-    RateLimiter -->|Pass (Tokens Available)| PIIScrubber
-    RateLimiter -->|Quota Exceeded| Client
+    RateLimiter -- "Tokens Available" --> PIIScrubber
+    RateLimiter -- "Quota Exceeded" --> Client
 
     PIIScrubber --> LRU
-    LRU -->|Cache Hit (<5ms)| Client
-    LRU -->|Cache Miss| Orchestrator
+    LRU -- "Cache Hit (under 5ms)" --> Client
+    LRU -- "Cache Miss" --> Orchestrator
 
-    Orchestrator -->|Attempt 1: Server Route| ServerRoute
-    ServerRoute -->|GoogleGenAI SDK| GeminiModel
-    Orchestrator -.->|Attempt 2: Client SDK Fallback| GeminiModel
-    Orchestrator -.->|Attempt 3: Heuristic Fallback| ZodValidator
+    Orchestrator --> ServerRoute
+    ServerRoute --> GeminiModel
+    Orchestrator -.-> GeminiModel
+    Orchestrator -.-> ZodValidator
 
     GeminiModel --> ZodValidator
-    ZodValidator -->|Validated Report| LRU
+    ZodValidator -- "Validated Report" --> LRU
     ZodValidator --> FirestoreStore
     ZodValidator --> LocalFallback
     ZodValidator --> Client
     Client --> ADRExport
+```
+
+```text
++---------------------------------------------------------------------------------------+
+|                                    CLIENT STUDIO UI                                   |
+|                          (Next.js 15, React 19, Tailwind CSS)                         |
++-------------------------------------------+-------------------------------------------+
+                                            |
+                                            v
++---------------------------------------------------------------------------------------+
+|                                   SECURITY MIDDLEWARE                                 |
+|  [Firebase Auth]  -->  [TokenBucketRateLimiter]  -->  [PII Redactor]  --> [LRU Cache] |
++-------------------------------------------+-------------------------------------------+
+                                            | (Cache Miss)
+                                            v
++---------------------------------------------------------------------------------------+
+|                            4-STAGE MULTI-AGENT ORCHESTRATOR                           |
+|  Stage 1: Market Sizing        | Stage 2: Competitive Moat & Incumbents               |
+|  Stage 3: Systems Architecture | Stage 4: Red-Team Critic & 90-Day Execution Sprints  |
++-------------------------------------------+-------------------------------------------+
+                                            |
+                                            v
++---------------------------------------------------------------------------------------+
+|                         LLM ENGINE & DETERMINISTIC CONTRACTS                          |
+|      [/api/validate-idea Proxy]  <-->  [Gemini 2.5 Flash]  -->  [Zod Validation]      |
++-------------------------------------------+-------------------------------------------+
+                                            |
+                                            v
++---------------------------------------------------------------------------------------+
+|                                   PERSISTENCE LAYER                                   |
+|   [Firestore: users/{uid}/validations]  <-->  [LocalStorage Resilient Fallback Cache] |
+|   [Architecture Decision Record (ADR-001) Markdown Download Engine]                   |
++---------------------------------------------------------------------------------------+
 ```
 
 ---
